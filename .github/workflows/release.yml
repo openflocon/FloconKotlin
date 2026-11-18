@@ -1,14 +1,23 @@
-name: Android - Publish to MavenCentral
+name: Release
 
+# Push a version tag (e.g. 1.9.6) to publish the SDK to MavenCentral and create the GitHub release.
+# A release created with GITHUB_TOKEN doesn't trigger other workflows, so publishing is done here
+# instead of on `release: published`.
 on:
-  release:
-    types: [published, released, prereleased]
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+*'
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (e.g. 1.9.6). Leave empty to use tag ref'
+        description: 'Release version (e.g. 1.9.6). The tag is created if it does not exist. Leave empty to use the current ref name'
         required: false
         type: string
+      draft:
+        description: 'Create the GitHub release as a draft'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -36,6 +45,9 @@ jobs:
       - name: Check release # debug = Flocon on, release = flocon-no-op + R8
         run: ./gradlew :sample:android:assembleDebug :sample:android:assembleRelease
 
+      - name: Check that flocon-no-op turns Flocon off in release
+        run: bash scripts/check-release-noop.sh
+
       - name: Publish to MavenCentral
         env:
           PROJECT_VERSION_NAME: ${{ inputs.version || github.ref_name }}
@@ -48,3 +60,21 @@ jobs:
           ./gradlew \
             publishToMavenCentral \
             --no-configuration-cache
+
+  release:
+    name: Create GitHub release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create the release with generated notes
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ inputs.version || github.ref_name }}
+          name: ${{ inputs.version || github.ref_name }}
+          generate_release_notes: true
+          draft: ${{ inputs.draft || false }}
+          prerelease: ${{ contains(inputs.version || github.ref_name, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
