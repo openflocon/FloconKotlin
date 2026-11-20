@@ -1,0 +1,11 @@
+// Wire client for the same test server as the grpc-java sample.
+syntax = "proto3";
+package helloworld;
+option java_package = "com.flocon.sample.android.wire";
+
+service Greeter {
+  rpc SayHello (HelloRequest) returns (HelloReply);
+}
+
+message HelloRequest { string name = 1; }
+message HelloReply { string message = 1; }

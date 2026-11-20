@@ -44,6 +44,7 @@ include(":database:sqldelight:sqldelight")
 include(":grpc:grpc-interceptor:grpc-interceptor")
 include(":grpc:grpc-interceptor-base:grpc-interceptor-base")
 include(":grpc:grpc-interceptor-lite:grpc-interceptor-lite")
+include(":grpc:wire-grpc:wire-grpc")
 
 includeBuild("build-logic")
 
