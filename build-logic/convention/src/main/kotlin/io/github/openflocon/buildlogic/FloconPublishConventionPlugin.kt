@@ -12,6 +12,8 @@ class FloconPublishConventionPlugin : Plugin<Project> {
                 apply("com.vanniktech.maven.publish")
             }
 
+            extensions.create("floconPublishing", FloconPublishingExtension::class.java, target)
+
             extensions.configure<MavenPublishBaseExtension> {
                 publishToMavenCentral(automaticRelease = true)
 

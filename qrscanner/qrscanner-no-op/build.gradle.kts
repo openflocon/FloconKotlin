@@ -17,14 +17,6 @@ kotlin {
     }
 }
 
-mavenPublishing {
-    coordinates(
-        groupId = project.property("floconGroupId") as String,
-        artifactId = "flocon-qr-scanner-no-op",
-        version = System.getenv("PROJECT_VERSION_NAME") ?: project.property("floconVersion") as String
-    )
-
-    pom {
-        name = "Flocon QR Scanner No-Op"
-    }
+floconPublishing {
+    coordinates(artifactId = "flocon-qr-scanner-no-op", name = "Flocon QR Scanner No-Op")
 }

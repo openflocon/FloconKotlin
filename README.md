@@ -66,6 +66,19 @@ bash scripts/check-release-noop.sh                       # checks R8 removed the
 
 Architecture notes are in [AGENT.md](AGENT.md). Versions are managed in `gradle/libs.versions.toml`.
 
+## Releasing
+
+Each module has its own version (`floconVersion.<artifactId>` in `gradle.properties`), so a module can be released without the others:
+
+1. In a PR, bump the version of the modules you release, and of `flocon-bom`.
+2. Run the [Android - Publish to MavenCentral](.github/workflows/publish_android.yml) workflow and tick those modules. It fails early if a version is already on Maven Central, then publishes them and tags `<artifactId>/<version>`.
+
+`flocon-bom` is ticked by default: it lists the version of every module, so BOM users only get a release once the BOM is released too. To release several modules in a row, untick it, then run the workflow with only `flocon-bom` at the end.
+
+A released module depends on the released version of the other modules: `flocon-database-room` 2.0.3 released alone depends on the `flocon` version in `gradle.properties` (say 2.0.0). To make sure it works with it, the workflow builds it against the modules from Maven Central: if it uses a `flocon` change that is not released yet, it fails to compile, and `flocon` must be released with it.
+
+Check it locally with `./gradlew :database:room:room:compileKotlinJvm -PfloconUseMaven=true -PfloconRelease=flocon-database-room`.
+
 ## License
 
 [MIT](LICENSE)
