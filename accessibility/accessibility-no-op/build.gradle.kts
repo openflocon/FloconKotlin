@@ -19,14 +19,6 @@ kotlin {
     }
 }
 
-mavenPublishing {
-    coordinates(
-        groupId = project.property("floconGroupId") as String,
-        artifactId = "flocon-accessibility-no-op",
-        version = System.getenv("PROJECT_VERSION_NAME") ?: project.property("floconVersion") as String
-    )
-
-    pom {
-        name = "Flocon Accessibility No-Op"
-    }
+floconPublishing {
+    coordinates(artifactId = "flocon-accessibility-no-op", name = "Flocon Accessibility No-Op")
 }

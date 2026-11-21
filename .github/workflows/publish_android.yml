@@ -1,17 +1,53 @@
 name: Android - Publish to MavenCentral
 
+# Releases only the ticked modules, at their version in gradle.properties (floconVersion.<artifactId>), plus flocon-bom.
+# Bump those versions in a PR first: see "Releasing" in README.md
 on:
-  release:
-    types: [published, released, prereleased]
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Release version (e.g. 1.9.6). Leave empty to use tag ref'
-        required: false
-        type: string
+      flocon:
+        description: 'flocon + flocon-no-op'
+        type: boolean
+        default: false
+      accessibility:
+        description: 'flocon-accessibility + flocon-accessibility-no-op'
+        type: boolean
+        default: false
+      qrscanner:
+        description: 'flocon-qr-scanner + flocon-qr-scanner-no-op'
+        type: boolean
+        default: false
+      datastores:
+        description: 'flocon-datastores'
+        type: boolean
+        default: false
+      ktor:
+        description: 'flocon-ktor-interceptor'
+        type: boolean
+        default: false
+      room:
+        description: 'flocon-database-room'
+        type: boolean
+        default: false
+      room3:
+        description: 'flocon-database-room3'
+        type: boolean
+        default: false
+      sqldelight:
+        description: 'flocon-database-sqldelight'
+        type: boolean
+        default: false
+      grpc:
+        description: 'flocon-grpc-interceptor-base + flocon-grpc-interceptor + flocon-grpc-interceptor-lite'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write # pushes the <artifactId>/<version> tags
 
 jobs:
   publish:
@@ -20,6 +56,57 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v6
+
+      - name: List the modules to release
+        id: modules
+        env:
+          FLOCON: ${{ inputs.flocon }}
+          ACCESSIBILITY: ${{ inputs.accessibility }}
+          QRSCANNER: ${{ inputs.qrscanner }}
+          DATASTORES: ${{ inputs.datastores }}
+          KTOR: ${{ inputs.ktor }}
+          ROOM: ${{ inputs.room }}
+          ROOM3: ${{ inputs.room3 }}
+          SQLDELIGHT: ${{ inputs.sqldelight }}
+          GRPC: ${{ inputs.grpc }}
+        run: |
+          modules=()
+          [[ "$FLOCON" == true ]] && modules+=(flocon flocon-no-op)
+          [[ "$ACCESSIBILITY" == true ]] && modules+=(flocon-accessibility flocon-accessibility-no-op)
+          [[ "$QRSCANNER" == true ]] && modules+=(flocon-qr-scanner flocon-qr-scanner-no-op)
+          [[ "$DATASTORES" == true ]] && modules+=(flocon-datastores)
+          [[ "$KTOR" == true ]] && modules+=(flocon-ktor-interceptor)
+          [[ "$ROOM" == true ]] && modules+=(flocon-database-room)
+          [[ "$ROOM3" == true ]] && modules+=(flocon-database-room3)
+          [[ "$SQLDELIGHT" == true ]] && modules+=(flocon-database-sqldelight)
+          [[ "$GRPC" == true ]] && modules+=(flocon-grpc-interceptor-base flocon-grpc-interceptor flocon-grpc-interceptor-lite)
+          if [[ ${#modules[@]} -eq 0 ]]; then
+            echo "::error::Tick at least one module to release"
+            exit 1
+          fi
+          modules+=(flocon-bom) # always released, so it lists the new versions
+
+          failed=0
+          tags=()
+          for artifact in "${modules[@]}"; do
+            version=$(grep -E "^floconVersion\.$artifact=" gradle.properties | cut -d= -f2)
+            if [[ -z "$version" ]]; then
+              echo "::error::Missing floconVersion.$artifact in gradle.properties"
+              failed=1
+              continue
+            fi
+            # Maven Central versions are immutable: fail before building if the version was not bumped
+            if curl -sf "https://repo1.maven.org/maven2/io/github/openflocon/$artifact/maven-metadata.xml" | grep -q "<version>$version</version>"; then
+              echo "::error::$artifact $version is already on Maven Central: bump floconVersion.$artifact in gradle.properties"
+              failed=1
+            fi
+            tags+=("$artifact/$version")
+            echo "- $artifact $version" >> "$GITHUB_STEP_SUMMARY"
+          done
+          [[ $failed -eq 0 ]] || exit 1
+
+          echo "release=$(IFS=,; echo "${modules[*]}")" >> "$GITHUB_OUTPUT"
+          echo "tags=${tags[*]}" >> "$GITHUB_OUTPUT"
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
@@ -34,11 +121,14 @@ jobs:
         run: ./gradlew jvmTest test
 
       - name: Check release # debug = Flocon on, release = flocon-no-op + R8
-        run: ./gradlew :sample:android:assembleDebug :sample:android:assembleRelease
+        run: |
+          ./gradlew :sample:android:assembleDebug :sample:android:assembleRelease
+          bash scripts/check-release-noop.sh
 
+      # The modules that are not released are taken from Maven Central at their released version: a released module
+      # that relies on unreleased changes of another module (e.g. a new flocon API) fails to compile here
       - name: Publish to MavenCentral
         env:
-          PROJECT_VERSION_NAME: ${{ inputs.version || github.ref_name }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALUSERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_MAVENCENTRALPASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEYID }}
@@ -46,5 +136,16 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGINMEMORYKEY }}
         run: |
           ./gradlew \
-            publishToMavenCentral \
+            publishFloconRelease \
+            -PfloconRelease=${{ steps.modules.outputs.release }} \
+            -PfloconUseMaven=true \
             --no-configuration-cache
+
+      - name: Tag the released versions
+        env:
+          TAGS: ${{ steps.modules.outputs.tags }}
+        run: |
+          for tag in $TAGS; do
+            git tag "$tag"
+          done
+          git push origin $TAGS

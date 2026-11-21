@@ -27,15 +27,12 @@ kotlin {
     }
 }
 
-mavenPublishing {
-    coordinates(
-        groupId = project.property("floconGroupId") as String,
-        artifactId = "flocon-no-op",
-        version = System.getenv("PROJECT_VERSION_NAME") ?: project.property("floconVersion") as String
-    )
+floconPublishing {
+    coordinates(artifactId = "flocon-no-op", name = "Flocon No-Op")
+}
 
+mavenPublishing {
     pom {
-        name = "Flocon No-Op"
         description = "Turns Flocon off in the builds it is added to, such as release builds."
     }
 }

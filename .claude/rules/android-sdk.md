@@ -10,7 +10,7 @@ paths:
 - Platform-specific code goes in `androidMain` / `iosMain` / `jvmMain` / `wasmJsMain` behind an `expect`/`actual` or an interface, never in common code.
 
 ## Modules
-- Each feature lives in a folder named after it: `featureflags/featureflags` (Gradle `:featureflags:featureflags`), registered in `settings.gradle.kts`. The Maven `artifactId` is set explicitly in each module's `mavenPublishing { coordinates(...) }`, so moving a module never changes its published coordinates.
+- Each feature lives in a folder named after it: `featureflags/featureflags` (Gradle `:featureflags:featureflags`), registered in `settings.gradle.kts`. The Maven `artifactId` is set explicitly in each module's `floconPublishing { coordinates(...) }`, so moving a module never changes its published coordinates. Its version is `floconVersion.<artifactId>` in `gradle.properties`: a new module adds it there, and to the `floconModules` map of the root `build.gradle.kts` and the publish workflow.
 - A plugin is a `FloconPluginFactory<Config, Plugin>` object with a `pluginId` matching the protocol plugin name (see `internal-docs/protocol/`).
 
 ## Turning Flocon off (`flocon-no-op`)

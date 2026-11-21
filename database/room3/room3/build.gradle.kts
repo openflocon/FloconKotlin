@@ -33,14 +33,6 @@ kotlin {
     }
 }
 
-mavenPublishing {
-    coordinates(
-        groupId = project.property("floconGroupId") as String,
-        artifactId = "flocon-database-room3",
-        version = System.getenv("PROJECT_VERSION_NAME") ?: project.property("floconVersion") as String
-    )
-
-    pom {
-        name = "Flocon Room3 Database"
-    }
+floconPublishing {
+    coordinates(artifactId = "flocon-database-room3", name = "Flocon Room3 Database")
 }
