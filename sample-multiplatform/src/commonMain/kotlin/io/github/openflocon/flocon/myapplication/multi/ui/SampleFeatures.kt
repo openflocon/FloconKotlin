@@ -41,6 +41,7 @@ enum class SampleFeature(
     WebSocket(SampleScreen.Network, "WebSocket", "Send a message on the open socket", buttonLabel = "Send", platforms = SamplePlatform.AndroidOnly),
     GraphQl(SampleScreen.Network, "GraphQL", "Apollo query on the GitHub API", platforms = SamplePlatform.AndroidOnly),
     Grpc(SampleScreen.Network, "gRPC", "SayHello unary call", platforms = SamplePlatform.AndroidOnly),
+    WireGrpc(SampleScreen.Network, "Square Wire gRPC", "SayHello unary call with Wire", platforms = SamplePlatform.AndroidOnly),
 
     DatabaseRoom3(SampleScreen.Database, "Dog, Room 3", "Insert a dog in the dogs database", buttonLabel = "Insert"),
     DatabaseRoom2(SampleScreen.Database, "Cat, Room 2", "Insert a cat in the Room 2 database", buttonLabel = "Insert", platforms = SamplePlatform.AndroidOnly),

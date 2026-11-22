@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.protobuf)
+    alias(libs.plugins.wire)
 }
 
 android {
@@ -70,6 +71,7 @@ dependencies {
 
     // gRPC
     implementation(flocon(projects.grpc.grpcInterceptorLite.grpcInterceptorLite))
+    implementation(flocon(projects.grpc.wireGrpc.wireGrpc))
     implementation(libs.grpc.android)
     implementation(libs.grpc.stub)
     implementation(libs.grpc.kotlin.stub)
@@ -135,4 +137,9 @@ protobuf {
             }
         }
     }
+}
+
+wire {
+    sourcePath { srcDir("src/main/wire") }
+    kotlin {}
 }

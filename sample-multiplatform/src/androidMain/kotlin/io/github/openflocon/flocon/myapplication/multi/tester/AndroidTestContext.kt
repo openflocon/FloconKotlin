@@ -16,4 +16,5 @@ object AndroidTestContext {
 
     // the gRPC stubs are generated in the app module (the protobuf plugin does not support KMP modules)
     var grpcSayHello: suspend () -> String? = { null }
+    var wireGrpcSayHello: suspend () -> String? = { null }
 }

@@ -36,6 +36,7 @@ fun registerAndroidSampleFeatures(context: Context) {
     }
     SampleFeatures.on(SampleFeature.GraphQl) { AndroidTestContext.graphQlTester.fetchViewerInfo() }
     SampleFeatures.on(SampleFeature.Grpc) { AndroidTestContext.grpcSayHello() }
+    SampleFeatures.on(SampleFeature.WireGrpc) { AndroidTestContext.wireGrpcSayHello() }
     SampleFeatures.on(SampleFeature.DatabaseRoom3) {
         Databases.getDogDatabase(context).dogDao().insertDog(newDog("Flocon"))
     }

@@ -17,6 +17,6 @@ fun NetworkScreen(onBack: () -> Unit) = PluginScreen(SampleScreen.Network, onBac
             SampleFeature.OkHttpGzip,
         ),
     )
-    ActionGroup("Realtime & APIs", listOf(SampleFeature.WebSocket, SampleFeature.GraphQl, SampleFeature.Grpc))
+    ActionGroup("Realtime & APIs", listOf(SampleFeature.WebSocket, SampleFeature.GraphQl, SampleFeature.Grpc, SampleFeature.WireGrpc))
     PlatformNote(SampleScreen.Network)
 }

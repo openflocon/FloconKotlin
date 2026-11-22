@@ -46,10 +46,24 @@ Every feature is its own module, so you only ship what you use. Using the `floco
 | `flocon-bom` | `:bom` | Bill of materials |
 | `flocon-ktor-interceptor` | `:network:ktor-interceptor:ktor-interceptor` | Ktor network interceptor |
 | `flocon-grpc-interceptor` | `:grpc:grpc-interceptor:grpc-interceptor` | gRPC interceptor (`-lite` and `-base` variants exist) |
+| `flocon-wire-grpc` | `:grpc:wire-grpc:wire-grpc` | Unary Square Wire gRPC inspection |
 | `flocon-database-room` / `-room3` / `-sqldelight` | `:database:*` | Database inspection for Room, Room 3 and SQLDelight |
 | `flocon-datastores` | `:datastores:datastores` | Typed DataStore |
 | `flocon-accessibility` / `-no-op` | `:accessibility:*` | Accessibility tools |
 | `flocon-qr-scanner` / `-no-op` | `:qrscanner:*` | QR scanner |
+
+For Square Wire (the adapter builds against 7.2.2), install `FloconNetwork`, then wrap the configured client before creating your service:
+
+```kotlin
+import io.github.openflocon.flocon.wire.grpc.withFlocon
+
+val greeter = GrpcGreeterClient(grpcClient.withFlocon(authority = "localhost:50051"))
+val reply = greeter.SayHello().execute(HelloRequest(name = "World"))
+```
+
+The adapter records unary calls in Desktop and MCP, including decoded Wire messages and the gRPC status.
+Use the original client for Wire's JVM `newBuilder()`. If you also install the Flocon OkHttp interceptor,
+exclude requests tagged with Wire's `GrpcMethod` in its `shouldLog` filter to avoid duplicate HTTP entries.
 
 Samples: [`sample`](sample) (Android) and [`sample-multiplatform`](sample-multiplatform).
 

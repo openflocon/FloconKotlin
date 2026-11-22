@@ -125,6 +125,7 @@ class MainActivity : ComponentActivity() {
         AndroidTestContext.graphQlTester = GraphQlTester(okHttpClient, githubToken = BuildConfig.GITHUB_TOKEN)
         AndroidTestContext.inMemoryDb = Databases.getInMemoryDogDatabase(applicationContext)
         AndroidTestContext.grpcSayHello = { GrpcController.sayHello() }
+        AndroidTestContext.wireGrpcSayHello = { GrpcController.sayHelloWithWire() }
         registerAndroidSampleFeatures(applicationContext)
         SampleQrScanner.scan = { Flocon.scanQrCodeAndConnect(this@MainActivity) }
         registerAndroidSampleWebView()
