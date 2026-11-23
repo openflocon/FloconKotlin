@@ -73,7 +73,11 @@ class MainActivity : ComponentActivity() {
                 }
                 deeplink("flocon://user/[userId]") {
                     label = "User"
-                    "userId" withAutoComplete listOf("Florent", "David", "Guillaume")
+                    "userId" withAutoComplete {
+                        "Florent (admin)" suggestDefault "Florent"
+                        "David (guest)" suggest "David"
+                        suggest("Guillaume")
+                    }
                 }
                 deeplink("flocon://post/[postId]?comment=[commentText]") {
                     label = "Post"

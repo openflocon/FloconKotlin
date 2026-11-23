@@ -33,11 +33,22 @@ internal data class DeeplinkVariableRemote(
         @SerialName("input")
         object Input : Mode
 
+        // `suggestions` (the values) stays for desktops that don't know `items` yet
         @Serializable
         @SerialName("auto_complete")
-        data class AutoComplete(val suggestions: List<String>) : Mode
+        data class AutoComplete(
+            val suggestions: List<String>,
+            val items: List<DeeplinkSuggestionRemote>? = null
+        ) : Mode
     }
 }
+
+@Serializable
+internal data class DeeplinkSuggestionRemote(
+    val value: String,
+    val label: String? = null,
+    val isDefault: Boolean = false
+)
 
 @JsonClassDiscriminator("type")
 internal sealed interface DeeplinkParameterRemote {
@@ -47,7 +58,9 @@ internal sealed interface DeeplinkParameterRemote {
     @SerialName("auto_complete")
     data class AutoComplete(
         override val name: String,
-        val autoComplete: List<String>
+        // the values, for desktops that don't know `suggestions` yet
+        val autoComplete: List<String>,
+        val suggestions: List<DeeplinkSuggestionRemote>? = null
     ) : DeeplinkParameterRemote
 
     @Serializable

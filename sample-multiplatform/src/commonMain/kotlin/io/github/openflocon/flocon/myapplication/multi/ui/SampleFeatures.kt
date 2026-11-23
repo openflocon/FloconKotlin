@@ -156,7 +156,11 @@ object SampleFeatures {
             Flocon.deeplinksPlugin.register {
                 deeplink("flocon://runtime/[id]") {
                     label = "Registered after install"
-                    "id" withAutoComplete listOf("1", "2", "3")
+                    "id" withAutoComplete {
+                        "First" suggestDefault "1"
+                        "Second" suggest "2"
+                        suggest("3")
+                    }
                 }
             }
         }
