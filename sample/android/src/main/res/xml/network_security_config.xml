@@ -4,4 +4,12 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="false">localhost</domain>
     </domain-config>
+    <!-- Debug builds only: trust user-installed CAs (e.g. the Flocon Desktop proxy CA)
+         so the proxy mode can intercept HTTPS calls. Release builds keep system CAs only. -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="user" />
+            <certificates src="system" />
+        </trust-anchors>
+    </debug-overrides>
 </network-security-config>
