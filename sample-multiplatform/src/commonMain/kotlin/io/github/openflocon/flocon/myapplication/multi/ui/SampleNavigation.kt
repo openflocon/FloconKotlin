@@ -19,6 +19,7 @@ import io.github.openflocon.flocon.myapplication.multi.ui.screens.HomeScreen
 import io.github.openflocon.flocon.myapplication.multi.ui.screens.ImagesScreen
 import io.github.openflocon.flocon.myapplication.multi.ui.screens.NetworkScreen
 import io.github.openflocon.flocon.myapplication.multi.ui.screens.PreferencesScreen
+import io.github.openflocon.flocon.myapplication.multi.ui.screens.ProxyScreen
 import io.github.openflocon.flocon.myapplication.multi.ui.screens.TimelineScreen
 import io.github.openflocon.flocon.myapplication.multi.ui.screens.WebViewScreen
 
@@ -26,6 +27,7 @@ import io.github.openflocon.flocon.myapplication.multi.ui.screens.WebViewScreen
 sealed interface SampleRoute {
     data object Home : SampleRoute
     data object Network : SampleRoute
+    data object Proxy : SampleRoute
     data object Database : SampleRoute
     data object Analytics : SampleRoute
     data object Accessibility : SampleRoute
@@ -44,6 +46,7 @@ sealed interface SampleRoute {
 val SampleScreen.route: SampleRoute
     get() = when (this) {
         SampleScreen.Network -> SampleRoute.Network
+        SampleScreen.Proxy -> SampleRoute.Proxy
         SampleScreen.Database -> SampleRoute.Database
         SampleScreen.Analytics -> SampleRoute.Analytics
         SampleScreen.Accessibility -> SampleRoute.Accessibility
@@ -83,6 +86,7 @@ fun SampleNavigation(backStack: SnapshotStateList<SampleRoute>) {
                 )
             }
             entry<SampleRoute.Network> { NetworkScreen(onBack) }
+            entry<SampleRoute.Proxy> { ProxyScreen(onBack) }
             entry<SampleRoute.Database> { DatabaseScreen(onBack) }
             entry<SampleRoute.Analytics> { AnalyticsScreen(onBack) }
             entry<SampleRoute.Accessibility> { AccessibilityScreen(onBack) }
