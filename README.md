@@ -69,7 +69,7 @@ Samples: [`sample`](sample) (Android) and [`sample-multiplatform`](sample-multip
 
 ## Contributing
 
-Requires JDK 21.
+Requires JDK 21. To release, push a version tag (`git tag 1.9.6 && git push origin 1.9.6`): the `Release` workflow publishes to MavenCentral and creates the GitHub release with generated notes.
 
 ```bash
 ./gradlew jvmTest test assemble                          # what CI runs on every PR
