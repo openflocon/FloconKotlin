@@ -78,17 +78,9 @@ kotlin {
 buildConfig {
     packageName("io.github.openflocon.flocondesktop")
 
-    buildConfigField("APP_VERSION", System.getenv("PROJECT_VERSION_NAME") ?: project.property("floconVersion") as String)
+    buildConfigField("APP_VERSION", providers.gradleProperty("floconVersion.flocon").get())
 }
 
-mavenPublishing {
-    coordinates(
-        groupId = project.property("floconGroupId") as String,
-        artifactId = "flocon",
-        version = System.getenv("PROJECT_VERSION_NAME") ?: project.property("floconVersion") as String
-    )
-
-    pom {
-        name = "Flocon"
-    }
+floconPublishing {
+    coordinates(artifactId = "flocon", name = "Flocon")
 }

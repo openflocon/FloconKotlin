@@ -22,14 +22,6 @@ kotlin {
     }
 }
 
-mavenPublishing {
-    coordinates(
-        groupId = project.property("floconGroupId") as String,
-        artifactId = "flocon-grpc-interceptor",
-        version = System.getenv("PROJECT_VERSION_NAME") ?: project.property("floconVersion") as String
-    )
-
-    pom {
-        name = "Flocon gRPC Interceptor"
-    }
+floconPublishing {
+    coordinates(artifactId = "flocon-grpc-interceptor", name = "Flocon gRPC Interceptor")
 }

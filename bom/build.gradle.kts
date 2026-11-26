@@ -20,17 +20,14 @@ dependencies {
     }
 }
 
+floconPublishing {
+    coordinates(artifactId = "flocon-bom", name = "Flocon BOM")
+}
+
 extensions.configure<MavenPublishBaseExtension> {
     configure(JavaPlatform())
 
-    coordinates(
-        groupId = project.property("floconGroupId") as String,
-        artifactId = "flocon-bom",
-        version = System.getenv("PROJECT_VERSION_NAME") ?: project.property("floconVersion") as String,
-    )
-
     pom {
-        name = "Flocon BOM"
         description = "Bill of Materials aligning the versions of all Flocon SDK modules."
     }
 }
