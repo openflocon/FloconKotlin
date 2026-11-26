@@ -16,6 +16,7 @@ import io.github.openflocon.flocon.myapplication.multi.room2.CatEntity
 import io.github.openflocon.flocon.myapplication.multi.sharedpreferences.updateDatastoreAge
 import io.github.openflocon.flocon.myapplication.multi.tester.AndroidTestContext
 import io.github.openflocon.flocon.myapplication.multi.tester.FloconOkHttpTester
+import io.github.openflocon.flocon.myapplication.multi.tester.ProxyOnlyTester
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -37,6 +38,8 @@ fun registerAndroidSampleFeatures(context: Context) {
     SampleFeatures.on(SampleFeature.GraphQl) { AndroidTestContext.graphQlTester.fetchViewerInfo() }
     SampleFeatures.on(SampleFeature.Grpc) { AndroidTestContext.grpcSayHello() }
     SampleFeatures.on(SampleFeature.WireGrpc) { AndroidTestContext.wireGrpcSayHello() }
+    SampleFeatures.on(SampleFeature.ProxyHttps) { ProxyOnlyTester.callHttps() }
+    SampleFeatures.on(SampleFeature.ProxyHttp) { ProxyOnlyTester.callHttp() }
     SampleFeatures.on(SampleFeature.DatabaseRoom3) {
         Databases.getDogDatabase(context).dogDao().insertDog(newDog("Flocon"))
     }

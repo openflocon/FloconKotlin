@@ -13,6 +13,7 @@ enum class SampleScreen(
     val platforms: Set<SamplePlatform> = SamplePlatform.All,
 ) {
     Network("Network", "HTTP, WebSocket, GraphQL, gRPC", SampleCategory.Network, SampleIcons.Network),
+    Proxy("Proxy", "Calls only the Flocon proxy sees", SampleCategory.Network, SampleIcons.Network, SamplePlatform.AndroidOnly),
     Database("Database", "Room 2, Room 3, in-memory", SampleCategory.Database, SampleIcons.Database),
     Analytics("Analytics", "Events and properties", SampleCategory.Analytics, SampleIcons.Analytics),
     Accessibility("Accessibility", "Screen reader events and labels", SampleCategory.Accessibility, SampleIcons.Accessibility),

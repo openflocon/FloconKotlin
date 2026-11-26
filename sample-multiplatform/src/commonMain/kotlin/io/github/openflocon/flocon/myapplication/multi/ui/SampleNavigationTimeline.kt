@@ -15,6 +15,7 @@ internal val SampleRoute.timelineName: String
     get() = when (this) {
         SampleRoute.Home -> "home"
         SampleRoute.Network -> "network"
+        SampleRoute.Proxy -> "proxy"
         SampleRoute.Database -> "database"
         SampleRoute.Analytics -> "analytics"
         SampleRoute.Accessibility -> "accessibility"
