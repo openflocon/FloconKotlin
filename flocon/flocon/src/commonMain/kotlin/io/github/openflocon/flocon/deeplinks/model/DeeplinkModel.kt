@@ -11,7 +11,7 @@ internal data class DeeplinkModel(
 
         data class AutoComplete(
             override val name: String,
-            val autoComplete: List<String>
+            val suggestions: List<DeeplinkSuggestion>
         ) : Parameter
 
         data class Variable(
@@ -20,3 +20,9 @@ internal data class DeeplinkModel(
         ) : Parameter
     }
 }
+
+internal data class DeeplinkSuggestion(
+    val value: String,
+    val label: String? = null,
+    val isDefault: Boolean = false
+)

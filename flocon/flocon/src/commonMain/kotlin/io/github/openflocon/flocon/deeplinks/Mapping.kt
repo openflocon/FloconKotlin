@@ -3,6 +3,8 @@ package io.github.openflocon.flocon.deeplinks
 import io.github.openflocon.flocon.deeplinks.model.DeeplinkModel
 import io.github.openflocon.flocon.deeplinks.model.DeeplinkParameterRemote
 import io.github.openflocon.flocon.deeplinks.model.DeeplinkRemote
+import io.github.openflocon.flocon.deeplinks.model.DeeplinkSuggestion
+import io.github.openflocon.flocon.deeplinks.model.DeeplinkSuggestionRemote
 import io.github.openflocon.flocon.deeplinks.model.DeeplinkVariableRemote
 import io.github.openflocon.flocon.deeplinks.model.DeeplinksRemote
 
@@ -24,7 +26,8 @@ internal fun DeeplinkModel.toRemote(): DeeplinkRemote = DeeplinkRemote(
 internal fun DeeplinkModel.Parameter.toRemote(): DeeplinkParameterRemote = when (this) {
     is DeeplinkModel.Parameter.AutoComplete -> DeeplinkParameterRemote.AutoComplete(
         name = name,
-        autoComplete = autoComplete
+        autoComplete = suggestions.map { it.value },
+        suggestions = suggestions.map { it.toRemote() }
     )
 
     is DeeplinkModel.Parameter.Variable -> DeeplinkParameterRemote.Variable(
@@ -33,6 +36,12 @@ internal fun DeeplinkModel.Parameter.toRemote(): DeeplinkParameterRemote = when 
     )
 }
 
+internal fun DeeplinkSuggestion.toRemote() = DeeplinkSuggestionRemote(
+    value = value,
+    label = label,
+    isDefault = isDefault
+)
+
 internal fun DeeplinkVariable.toRemote() = DeeplinkVariableRemote(
     name = name,
     mode = mode.toRemote()
@@ -40,7 +49,8 @@ internal fun DeeplinkVariable.toRemote() = DeeplinkVariableRemote(
 
 internal fun DeeplinkVariable.Mode.toRemote() = when (this) {
     is DeeplinkVariable.Mode.AutoComplete -> DeeplinkVariableRemote.Mode.AutoComplete(
-        suggestions = suggestions
+        suggestions = suggestions.map { it.value },
+        items = suggestions.map { it.toRemote() }
     )
 
     DeeplinkVariable.Mode.Input -> DeeplinkVariableRemote.Mode.Input

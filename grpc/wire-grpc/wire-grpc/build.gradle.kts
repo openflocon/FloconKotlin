@@ -28,7 +28,7 @@ mavenPublishing {
     coordinates(
         groupId = project.property("floconGroupId") as String,
         artifactId = "flocon-wire-grpc",
-        version = System.getenv("PROJECT_VERSION_NAME") ?: project.property("floconVersion") as String
+        version = System.getenv("PROJECT_VERSION_NAME") ?: project.property("floconVersion.flocon-wire-grpc") as String
     )
 
     pom {

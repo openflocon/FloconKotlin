@@ -45,6 +45,69 @@ class FloconDeeplinksPluginTest {
         assertContains(body, "Florent")
     }
 
+    private suspend fun sentBody(block: FloconDeeplinksConfig.() -> Unit): String {
+        val sender = FakeFloconMessageSender()
+        val config = FloconDeeplinksConfigImpl().apply(block)
+        val plugin = FloconDeeplinksPluginImpl(
+            deeplinks = config.deeplinks(),
+            variables = config.variables(),
+            sender = sender,
+            encoder = FloconEncoder(FloconDeeplinkEncoding().serializersModule),
+        )
+        plugin.onConnectedToServer()
+        return sender.messages.single().third
+    }
+
+    @Test
+    fun `labelled and default suggestions are sent next to the plain values`() = runTest {
+        val body = sentBody {
+            variable("env") {
+                autoComplete {
+                    "Production" suggest "prod"
+                    "Staging" suggestDefault "staging"
+                }
+            }
+            deeplink("flocon://home?tab=[tab]") {
+                "tab" withAutoComplete {
+                    suggest("posts")
+                    "Friends list" suggest "friends"
+                }
+            }
+        }
+
+        // values stay in the legacy fields
+        assertContains(body, """"suggestions":["prod","staging"]""")
+        assertContains(body, """"autoComplete":["posts","friends"]""")
+        // labelled items
+        assertContains(body, """{"value":"prod","label":"Production"}""")
+        assertContains(body, """{"value":"staging","label":"Staging","isDefault":true}""")
+        assertContains(body, """{"value":"friends","label":"Friends list"}""")
+    }
+
+    @Test
+    fun `plain string suggestions have no label and no default`() = runTest {
+        val body = sentBody {
+            deeplink("flocon://user/[userId]") { "userId" withAutoComplete listOf("Florent", "Florent", "David") }
+        }
+
+        assertContains(body, """"autoComplete":["Florent","David"]""")
+        assertContains(body, """"suggestions":[{"value":"Florent"},{"value":"David"}]""")
+    }
+
+    @Test
+    fun `only the first default stays and a duplicated value keeps its last declaration`() {
+        val suggestions = DeeplinkSuggestionsBuilder().apply {
+            "A" suggestDefault "a"
+            "B" suggestDefault "b"
+            "A bis" suggest "a"
+        }.build()
+
+        assertEquals(listOf("b", "a"), suggestions.map { it.value })
+        // "a" was redeclared without default, the first default left is "b"
+        assertEquals(listOf(true, false), suggestions.map { it.isDefault })
+        assertEquals("A bis", suggestions.last().label)
+    }
+
     @Test
     fun `deeplinks registered after install are sent and kept for reconnection`() = runTest {
         val sender = FakeFloconMessageSender()

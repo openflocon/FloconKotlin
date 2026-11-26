@@ -2,6 +2,7 @@ package io.github.openflocon.flocon.deeplinks
 
 import io.github.openflocon.flocon.FloconPlugin
 import io.github.openflocon.flocon.deeplinks.model.DeeplinkModel
+import io.github.openflocon.flocon.deeplinks.model.DeeplinkSuggestion
 
 class DeeplinkLinkBuilder internal constructor(
     private val link: String
@@ -14,7 +15,15 @@ class DeeplinkLinkBuilder internal constructor(
     infix fun String.withAutoComplete(suggestions: List<String>) {
         parameters[this] = DeeplinkModel.Parameter.AutoComplete(
             name = this,
-            autoComplete = suggestions.distinct()
+            suggestions = suggestions.toSuggestions()
+        )
+    }
+
+    /** Suggestions with an optional label, and an optional default one, see [DeeplinkSuggestionsBuilder]. */
+    infix fun String.withAutoComplete(block: DeeplinkSuggestionsBuilder.() -> Unit) {
+        parameters[this] = DeeplinkModel.Parameter.AutoComplete(
+            name = this,
+            suggestions = DeeplinkSuggestionsBuilder().apply(block).build()
         )
     }
 
@@ -42,7 +51,12 @@ class DeeplinkVariableBuilder internal constructor(
     var description: String? = null
 
     fun autoComplete(suggestions: List<String>) {
-        mode = DeeplinkVariable.Mode.AutoComplete(suggestions)
+        mode = DeeplinkVariable.Mode.AutoComplete(suggestions.toSuggestions())
+    }
+
+    /** Suggestions with an optional label, and an optional default one, see [DeeplinkSuggestionsBuilder]. */
+    fun autoComplete(block: DeeplinkSuggestionsBuilder.() -> Unit) {
+        mode = DeeplinkVariable.Mode.AutoComplete(DeeplinkSuggestionsBuilder().apply(block).build())
     }
 
     internal fun build(): DeeplinkVariable = DeeplinkVariable(
@@ -60,7 +74,7 @@ internal data class DeeplinkVariable(
 
     sealed interface Mode {
         object Input : Mode
-        data class AutoComplete(val suggestions: List<String>) : Mode
+        data class AutoComplete(val suggestions: List<DeeplinkSuggestion>) : Mode
     }
 }
 
