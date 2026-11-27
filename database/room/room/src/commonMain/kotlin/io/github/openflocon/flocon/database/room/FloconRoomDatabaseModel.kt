@@ -59,8 +59,7 @@ internal data class FloconRoomDatabaseModel(
  * use the same connection: outside a transaction, a driver with its own pool (AndroidSQLiteDriver, the framework
  * SQLiteDatabase) may run them on different connections, and `changes()` then returns 0.
  */
-private suspend fun <R> RoomDatabase.write(block: suspend (PooledConnection) -> R): R =
-    useWriterConnection { transactor -> transactor.immediateTransaction { block(this) } }
+private suspend fun <R> RoomDatabase.write(block: suspend (PooledConnection) -> R): R = useWriterConnection { transactor -> transactor.immediateTransaction { block(this) } }
 
 private suspend fun executeSelect(
     connection: PooledConnection,
