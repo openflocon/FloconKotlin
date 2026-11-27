@@ -1,9 +1,11 @@
 package io.github.openflocon.flocon.database.room
 
+import androidx.room.PooledConnection
 import androidx.room.RoomDatabase
-import androidx.room.Transactor
 import androidx.room.execSQL
+import androidx.room.immediateTransaction
 import androidx.room.useReaderConnection
+import androidx.room.useWriterConnection
 import io.github.openflocon.flocon.database.core.FloconDatabasePlugin
 import io.github.openflocon.flocon.database.core.model.FloconDatabaseModel
 import io.github.openflocon.flocon.database.core.model.fromdevice.DatabaseExecuteResponse
@@ -31,33 +33,18 @@ internal data class FloconRoomDatabaseModel(
 ) : FloconDatabaseModel {
 
     override suspend fun executeQuery(query: String): DatabaseExecuteResponse = try {
-        database.useReaderConnection { connection ->
-            val firstWordUpperCase = getFirstWord(query).uppercase()
+        when (getFirstWord(query).uppercase()) {
+            "SELECT",
+            "PRAGMA",
+            "EXPLAIN" -> database.useReaderConnection { executeSelect(connection = it, query = query) }
 
-            when (firstWordUpperCase) {
-                "SELECT",
-                "PRAGMA",
-                "EXPLAIN" -> executeSelect(
-                    connection = connection,
-                    query = query
-                )
+            "INSERT" -> database.write { executeInsert(connection = it, query = query) }
 
-                "INSERT" -> executeInsert(
-                    connection = connection,
-                    query = query
-                )
+            "UPDATE",
+            "DELETE" -> database.write { executeUpdateDelete(connection = it, query = query) }
 
-                "UPDATE",
-                "DELETE" -> executeUpdateDelete(
-                    connection = connection,
-                    query = query
-                )
-
-                else -> executeRawQuery(
-                    connection = connection,
-                    query = query
-                )
-            }
+            // not in a transaction: the query may be BEGIN, VACUUM...
+            else -> database.useWriterConnection { executeRawQuery(connection = it, query = query) }
         }
     } catch (t: Throwable) {
         DatabaseExecuteSqlResponse.Error(
@@ -67,8 +54,16 @@ internal data class FloconRoomDatabaseModel(
     }
 }
 
+/**
+ * Runs a write and the read of its result (`changes()`, `last_insert_rowid()`) in one transaction, so that both
+ * use the same connection: outside a transaction, a driver with its own pool (AndroidSQLiteDriver, the framework
+ * SQLiteDatabase) may run them on different connections, and `changes()` then returns 0.
+ */
+private suspend fun <R> RoomDatabase.write(block: suspend (PooledConnection) -> R): R =
+    useWriterConnection { transactor -> transactor.immediateTransaction { block(this) } }
+
 private suspend fun executeSelect(
-    connection: Transactor,
+    connection: PooledConnection,
     query: String,
 ): DatabaseExecuteSqlResponse = connection.usePrepared(query) { statement ->
     val columnNames = mutableListOf<String>()
@@ -93,7 +88,7 @@ private suspend fun executeSelect(
 }
 
 private suspend fun executeInsert(
-    connection: Transactor,
+    connection: PooledConnection,
     query: String,
 ): DatabaseExecuteSqlResponse {
     connection.execSQL(query)
@@ -105,7 +100,7 @@ private suspend fun executeInsert(
 }
 
 private suspend fun executeUpdateDelete(
-    connection: Transactor,
+    connection: PooledConnection,
     query: String,
 ): DatabaseExecuteSqlResponse {
     connection.execSQL(query)
@@ -117,7 +112,7 @@ private suspend fun executeUpdateDelete(
 }
 
 private suspend fun executeRawQuery(
-    connection: Transactor,
+    connection: PooledConnection,
     query: String,
 ): DatabaseExecuteSqlResponse {
     connection.execSQL(query)
